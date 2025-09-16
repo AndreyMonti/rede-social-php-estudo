@@ -1,0 +1,11 @@
+body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;margin:0;padding:0}
+.topbar{background:#0d6efd;color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center}
+.container{max-width:900px;margin:20px auto;background:#fff;padding:20px;border-radius:6px}
+.post{border-bottom:1px solid #eee;padding:10px 0}
+.avatar{width:40px;height:40px;border-radius:50%;object-fit:cover}
+.avatar-large{width:120px;height:120px;border-radius:50%;object-fit:cover}
+.post-img{max-width:100%;margin-top:10px}
+.actions{margin-top:8px}
+button{padding:8px 12px;border-radius:6px;border:none;background:#0d6efd;color:#fff}
+.alert{background:#ffdddd;padding:8px;margin:8px 0;border-left:4px solid #f00}
+footer.footer{text-align:center;padding:12px;color:#666;font-size:14px}

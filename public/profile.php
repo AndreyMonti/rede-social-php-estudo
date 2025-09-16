@@ -33,9 +33,16 @@ $userPosts = $stmtUserPosts->fetchAll();
 ?>
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/profile.css">
+
 <div class="profile-header">
   <div class="profile-avatar">
+<<<<<<< HEAD
   <img src="<?= esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
+=======
+    <img src="<?= $u['avatar'] 
+                  ? BASE_URL . '/uploads/' . esc($u['avatar']) 
+                  : BASE_URL . '/assets/img/default-avatar.png' ?>" 
+>>>>>>> 977d522ef25cc0e1f61cfcb3580e15b4b5527763
          alt="Avatar de <?=esc($u['nome'])?>">
   </div>
   <div class="profile-info">
@@ -68,13 +75,21 @@ $userPosts = $stmtUserPosts->fetchAll();
     <?php foreach($userPosts as $post): ?>
       <div class="post-card">
         <div class="post-header">
+<<<<<<< HEAD
           <img src="<?= $u['avatar'] ? esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" alt="Avatar de <?=esc($u['nome'])?>">
+=======
+          <img src="<?= $u['avatar'] 
+                        ? BASE_URL . '/uploads/' . esc($u['avatar']) 
+                        : BASE_URL . '/assets/img/default-avatar.png' ?>" 
+               class="post-avatar" alt="Avatar de <?=esc($u['nome'])?>">
+>>>>>>> 977d522ef25cc0e1f61cfcb3580e15b4b5527763
           <strong><?=esc($u['nome'])?></strong>
         </div>
         <div class="post-content"><?= nl2br(esc($post['conteudo'])) ?></div>
         <?php if($post['imagem']): ?>
           <div class="post-img-wrap">
-            <img src="<?= '/public/uploads' . esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
+            <img src="<?= BASE_URL . '/' . esc($post['imagem']) ?>" 
+                 class="post-img" alt="Imagem do post">
           </div>
         <?php endif; ?>
         <div class="post-footer">

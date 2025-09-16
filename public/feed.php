@@ -49,10 +49,17 @@ $stmt = $pdo->prepare("
     SELECT p.*, u.nome, u.avatar AS usuario_avatar
     FROM posts p
     JOIN users u ON p.user_id = u.id
+    WHERE p.user_id = ?
     ORDER BY p.criado_em DESC
 ");
+<<<<<<< HEAD
 $stmt->execute();
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+=======
+$stmt->execute([$user_id]);
+$posts = $stmt->fetchAll();
+?>
+>>>>>>> 977d522ef25cc0e1f61cfcb3580e15b4b5527763
 
 ?>
 <!DOCTYPE html>

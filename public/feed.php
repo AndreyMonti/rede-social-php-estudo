@@ -33,9 +33,10 @@ $stmt = $pdo->prepare("
     SELECT p.*, u.nome, u.avatar AS usuario_avatar
     FROM posts p
     JOIN users u ON p.user_id = u.id
+    WHERE p.user_id = ?
     ORDER BY p.criado_em DESC
 ");
-$stmt->execute();
+$stmt->execute([$user_id]);
 $posts = $stmt->fetchAll();
 ?>
 
@@ -51,7 +52,7 @@ $posts = $stmt->fetchAll();
         <h1>ConectaTech</h1>
         <nav>
             <a href="feed.php">Feed</a>
-            <a href="profile.php">Perfil</a>
+            <a href="perfil.php">Perfil</a>
             <a href="logout.php">Sair</a>
         </nav>
     </header>
@@ -79,14 +80,7 @@ $posts = $stmt->fetchAll();
                 $comments = $stmtComments->fetchAll();
             ?>
             <div class="post" data-post-id="<?= $post['id'] ?>">
-                <div class="post-header">
-    <img 
-        src="<?= $post['usuario_avatar'] ? '/public/uploads/avatar/' . htmlspecialchars($post['usuario_avatar']) : '/public/assets/img/default-avatar.png' ?>" 
-        alt="Avatar de <?= htmlspecialchars($post['nome']) ?>" 
-        class="post-avatar"
-    >
-    <span class="nome"><?= htmlspecialchars($post['nome']) ?></span>
-</div>
+                <div class="nome"><?= htmlspecialchars($post['nome']) ?></div>
                 <div class="conteudo"><?= nl2br(htmlspecialchars($post['conteudo'])) ?></div>
                 <?php if($post['imagem']): ?>
                     <img src="<?= htmlspecialchars($post['imagem']) ?>" alt="Imagem do post">

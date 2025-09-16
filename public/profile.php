@@ -35,7 +35,7 @@ $userPosts = $stmtUserPosts->fetchAll();
 <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/profile.css">
 <div class="profile-header">
   <div class="profile-avatar">
-    <img src="<?= $u['avatar'] ? '/public/uploads/' . esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" 
+  <img src="<?= esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
          alt="Avatar de <?=esc($u['nome'])?>">
   </div>
   <div class="profile-info">
@@ -68,7 +68,7 @@ $userPosts = $stmtUserPosts->fetchAll();
     <?php foreach($userPosts as $post): ?>
       <div class="post-card">
         <div class="post-header">
-          <img src="<?= $u['avatar'] ? '/public/uploads/' . esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" class="post-avatar">
+          <img src="<?= $u['avatar'] ? esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" alt="Avatar de <?=esc($u['nome'])?>">
           <strong><?=esc($u['nome'])?></strong>
         </div>
         <div class="post-content"><?= nl2br(esc($post['conteudo'])) ?></div>

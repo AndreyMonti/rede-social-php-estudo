@@ -52,7 +52,7 @@ $posts = $stmt->fetchAll();
         <h1>ConectaTech</h1>
         <nav>
             <a href="feed.php">Feed</a>
-            <a href="perfil.php">Perfil</a>
+            <a href="profile.php">Perfil</a>
             <a href="logout.php">Sair</a>
         </nav>
     </header>

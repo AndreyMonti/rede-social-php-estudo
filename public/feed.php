@@ -33,10 +33,9 @@ $stmt = $pdo->prepare("
     SELECT p.*, u.nome, u.avatar AS usuario_avatar
     FROM posts p
     JOIN users u ON p.user_id = u.id
-    WHERE p.user_id = ?
     ORDER BY p.criado_em DESC
 ");
-$stmt->execute([$user_id]);
+$stmt->execute();
 $posts = $stmt->fetchAll();
 ?>
 
@@ -52,7 +51,7 @@ $posts = $stmt->fetchAll();
         <h1>ConectaTech</h1>
         <nav>
             <a href="feed.php">Feed</a>
-            <a href="perfil.php">Perfil</a>
+            <a href="profile.php">Perfil</a>
             <a href="logout.php">Sair</a>
         </nav>
     </header>

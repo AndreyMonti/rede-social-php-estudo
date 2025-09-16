@@ -5,7 +5,7 @@ require_once __DIR__ . '/../config/config.php';
   <a href="<?= BASE_URL ?>/public/feed.php" class="logo">ConectaTech</a>
   <nav class="topbar-nav">
     <?php if(isLogged()): ?>
-  <a href="/public/profile.php?id=<?=currentUserId()?>" class="nav-link">Meu Perfil</a>
+      <a href="<?= BASE_URL ?>/public/profile.php?id=<?=currentUserId()?>" class="nav-link">Meu Perfil</a>
       <a href="<?= BASE_URL ?>/public/chat.php" class="nav-link">Chat</a>
       <a href="<?= BASE_URL ?>/public/logout.php" class="nav-link">Sair</a>
     <?php else: ?>

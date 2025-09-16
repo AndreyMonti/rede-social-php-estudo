@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['conteudo'])) {
     if (isset($_FILES['imagem']) && $_FILES['imagem']['size'] > 0) {
         $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
         if (in_array($_FILES['imagem']['type'], $allowedTypes)) {
-            $uploadDir = __DIR__ . '/uploads/';
+            $uploadDir = __DIR__ . '/../public/uploads/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
             $ext = pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION);
@@ -37,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['conteudo'])) {
 // Deletar post
 if (isset($_GET['delete_post'])) {
     $delete_post_id = intval($_GET['delete_post']);
-    // Garante que só o dono pode deletar
     $stmt = $pdo->prepare("DELETE FROM posts WHERE id=? AND user_id=?");
     $stmt->execute([$delete_post_id, $user_id]);
     header('Location: feed.php');
@@ -49,19 +48,12 @@ $stmt = $pdo->prepare("
     SELECT p.*, u.nome, u.avatar AS usuario_avatar
     FROM posts p
     JOIN users u ON p.user_id = u.id
-    WHERE p.user_id = ?
     ORDER BY p.criado_em DESC
 ");
-<<<<<<< HEAD
 $stmt->execute();
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-=======
-$stmt->execute([$user_id]);
-$posts = $stmt->fetchAll();
 ?>
->>>>>>> 977d522ef25cc0e1f61cfcb3580e15b4b5527763
 
-?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -80,9 +72,9 @@ header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:b
 .post-form button { margin-top:10px; padding:10px 20px; border:none; border-radius:6px; background:#007bff; color:#fff; cursor:pointer; }
 .post { background:#fff; padding:15px; border-radius:12px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
 .post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.post-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #007bff; }
+.post-avatar { width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #007bff; }
 .post .nome { font-weight:bold; font-size:1.1em; }
-.post img.post-img { width:100%; border-radius:10px; margin-bottom:10px; }
+.post img.post-img { width:100%; max-height:400px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
 .post-actions { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
 .comment-section { margin-top:8px; display:none; }
 .comment-form { display:flex; gap:8px; margin-bottom:8px; }
@@ -125,7 +117,7 @@ header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:b
     ?>
     <div class="post" data-post-id="<?= $post['id'] ?>">
         <div class="post-header">
-            <img src="<?= $post['usuario_avatar'] ? 'uploads/' . htmlspecialchars($post['usuario_avatar']) : 'assets/img/default-avatar.png' ?>" class="post-avatar" alt="Avatar de <?= htmlspecialchars($post['nome']) ?>">
+            <img src="<?= $post['usuario_avatar'] ? '../public/uploads/' . htmlspecialchars($post['usuario_avatar']) : '../public/assets/img/default-avatar.png' ?>" class="post-avatar" alt="Avatar de <?= htmlspecialchars($post['nome']) ?>">
             <div class="nome"><?= htmlspecialchars($post['nome']) ?></div>
             <?php if ($post['user_id'] == $user_id): ?>
                 <a href="feed.php?delete_post=<?= $post['id'] ?>" class="delete-post" onclick="return confirm('Tem certeza que deseja excluir este post?')">Excluir</a>
@@ -133,9 +125,9 @@ header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:b
         </div>
         <div class="conteudo"><?= nl2br(htmlspecialchars($post['conteudo'])) ?></div>
         <?php if ($post['imagem']): ?>
-            <img src="<?= htmlspecialchars($post['imagem']) ?>" class="post-img" alt="Imagem do post">
+            <img src="<?= '../public/' . htmlspecialchars($post['imagem']) ?>" class="post-img" alt="Imagem do post">
         <?php endif; ?>
-        <div class="data"><?= $post['criado_em'] ?></div>
+        <div class="data"><?= date('d/m/Y H:i', strtotime($post['criado_em'])) ?></div>
         <div class="post-actions">
             <button class="like-btn" data-post-id="<?= $post['id'] ?>">Curtir</button>
             <span class="like-count" id="like-count-<?= $post['id'] ?>"><?= $likes ?></span>
@@ -154,6 +146,7 @@ header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:b
         </div>
     </div>
 <?php endforeach; ?>
+
 </div>
 
 <script src="../public/assets/js/app.js"></script>
@@ -164,59 +157,6 @@ document.querySelectorAll('.comment-toggle-btn').forEach(btn => {
         const postId = this.dataset.postId;
         const section = document.getElementById('comment-section-' + postId);
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
-    });
-});
-
-// AJAX comentários
-document.querySelectorAll('.comment-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const postId = this.dataset.postId;
-        const conteudo = this.querySelector('input[name="comentario"]').value;
-        fetch('../ajax/comment.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'post_id=' + postId + '&conteudo=' + encodeURIComponent(conteudo)
-        })
-        .then(r => r.json())
-        .then(data => {
-            if(data.status === 'ok' && data.comment){
-                const list = document.getElementById('comments-list-' + postId);
-                const div = document.createElement('div');
-                div.className = 'comment-item';
-                div.innerHTML = `<strong>${data.comment.nome}</strong>: ${data.comment.conteudo}`;
-                list.appendChild(div);
-                this.querySelector('input[name="comentario"]').value = '';
-            }else{
-                alert('Erro ao comentar');
-            }
-        });
-    });
-});
-
-// AJAX likes
-document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const postId = this.dataset.postId;
-        fetch('../ajax/like.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'post_id=' + postId
-        })
-        .then(r => r.json())
-        .then(data => {
-            if(data.status === 'liked' || data.status === 'unliked'){
-                fetch('../ajax/like.php?count=1&post_id=' + postId)
-                  .then(r => r.json())
-                  .then(countData => {
-                    if(countData.likes !== undefined){
-                      document.getElementById('like-count-' + postId).textContent = countData.likes;
-                    }
-                  });
-            }else{
-                alert('Erro ao curtir');
-            }
-        });
     });
 });
 </script>

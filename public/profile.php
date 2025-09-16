@@ -6,8 +6,11 @@ require_once __DIR__ . '/../includes/helpers.php';
 $id = intval($_GET['id'] ?? currentUserId());
 $stmt = $pdo->prepare('SELECT * FROM users WHERE id=?');
 $stmt->execute([$id]);
-$u = $stmt->fetch();
-if (!$u) { echo 'Usuário não encontrado'; exit; }
+$u = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$u) { 
+    echo 'Usuário não encontrado'; 
+    exit; 
+}
 
 $pageTitle = 'Perfil - ' . $u['nome'];
 include __DIR__ . '/../includes/head.php';
@@ -29,75 +32,62 @@ $numLikes = $stmtLikes->fetchColumn();
 // Buscar posts do usuário
 $stmtUserPosts = $pdo->prepare('SELECT * FROM posts WHERE user_id=? ORDER BY criado_em DESC');
 $stmtUserPosts->execute([$id]);
-$userPosts = $stmtUserPosts->fetchAll();
+$userPosts = $stmtUserPosts->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/profile.css">
 
 <div class="profile-header">
-  <div class="profile-avatar">
-<<<<<<< HEAD
-  <img src="<?= esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
-=======
-    <img src="<?= $u['avatar'] 
-                  ? BASE_URL . '/uploads/' . esc($u['avatar']) 
-                  : BASE_URL . '/assets/img/default-avatar.png' ?>" 
->>>>>>> 977d522ef25cc0e1f61cfcb3580e15b4b5527763
-         alt="Avatar de <?=esc($u['nome'])?>">
-  </div>
-  <div class="profile-info">
-    <h1><?=esc($u['nome'])?></h1>
-    <?php if($u['bio']): ?>
-      <p class="bio"><?=nl2br(esc($u['bio']))?></p>
-    <?php endif; ?>
-    <div class="profile-stats">
-      <div><strong><?= $numPosts ?></strong><br>Posts</div>
-      <div><strong><?= $numLikes ?></strong><br>Likes</div>
-      <div><strong><?=date('m/Y', strtotime($u['criado_em']))?></strong><br>Desde</div>
+    <div class="profile-avatar">
+        <img src="<?= $u['avatar'] ? BASE_URL . '/uploads/' . esc($u['avatar']) : BASE_URL . '/public/assets/img/default-avatar.png' ?>" 
+             alt="Avatar de <?= esc($u['nome']) ?>">
     </div>
+    <div class="profile-info">
+        <h1><?= esc($u['nome']) ?></h1>
+        <?php if($u['bio']): ?>
+            <p class="bio"><?= nl2br(esc($u['bio'])) ?></p>
+        <?php endif; ?>
+        <div class="profile-stats">
+            <div><strong><?= $numPosts ?></strong><br>Posts</div>
+            <div><strong><?= $numLikes ?></strong><br>Likes</div>
+            <div><strong><?= date('m/Y', strtotime($u['criado_em'])) ?></strong><br>Desde</div>
+        </div>
 
-    <?php if(currentUserId() === $u['id']): ?>
-      <div class="profile-actions">
-        <a href="<?= BASE_URL ?>/public/edit_profile.php" class="btn-edit">✏️ Editar Perfil</a>
-        <a href="<?= BASE_URL ?>/public/delete_account.php" class="btn-delete" 
-           onclick="return confirm('Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.');">
-           🗑️ Excluir Conta
-        </a>
-      </div>
-    <?php endif; ?>
-  </div>
+        <?php if(currentUserId() === $u['id']): ?>
+            <div class="profile-actions">
+                <a href="<?= BASE_URL ?>/public/edit_profile.php" class="btn-edit">✏️ Editar Perfil</a>
+                <a href="<?= BASE_URL ?>/public/delete_account.php" class="btn-delete" 
+                   onclick="return confirm('Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.');">
+                   🗑️ Excluir Conta
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <div class="profile-posts">
-  <?php if(count($userPosts) === 0): ?>
-    <p class="no-posts">Nenhuma postagem encontrada.</p>
-  <?php else: ?>
-    <?php foreach($userPosts as $post): ?>
-      <div class="post-card">
-        <div class="post-header">
-<<<<<<< HEAD
-          <img src="<?= $u['avatar'] ? esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" alt="Avatar de <?=esc($u['nome'])?>">
-=======
-          <img src="<?= $u['avatar'] 
-                        ? BASE_URL . '/uploads/' . esc($u['avatar']) 
-                        : BASE_URL . '/assets/img/default-avatar.png' ?>" 
-               class="post-avatar" alt="Avatar de <?=esc($u['nome'])?>">
->>>>>>> 977d522ef25cc0e1f61cfcb3580e15b4b5527763
-          <strong><?=esc($u['nome'])?></strong>
-        </div>
-        <div class="post-content"><?= nl2br(esc($post['conteudo'])) ?></div>
-        <?php if($post['imagem']): ?>
-          <div class="post-img-wrap">
-            <img src="<?= BASE_URL . '/' . esc($post['imagem']) ?>" 
-                 class="post-img" alt="Imagem do post">
-          </div>
-        <?php endif; ?>
-        <div class="post-footer">
-          <span class="post-date"><?=date('d/m/Y H:i', strtotime($post['criado_em']))?></span>
-        </div>
-      </div>
-    <?php endforeach; ?>
-  <?php endif; ?>
+    <?php if(count($userPosts) === 0): ?>
+        <p class="no-posts">Nenhuma postagem encontrada.</p>
+    <?php else: ?>
+        <?php foreach($userPosts as $post): ?>
+            <div class="post-card">
+                <div class="post-header">
+                    <img src="<?= $u['avatar'] ? BASE_URL . '/uploads/' . esc($u['avatar']) : BASE_URL . '/public/assets/img/default-avatar.png' ?>" 
+                         alt="Avatar de <?= esc($u['nome']) ?>">
+                    <strong><?= esc($u['nome']) ?></strong>
+                </div>
+                <div class="post-content"><?= nl2br(esc($post['conteudo'])) ?></div>
+                <?php if($post['imagem']): ?>
+                    <div class="post-img-wrap">
+                        <img src="<?= BASE_URL . '/public/uploads/' . esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
+                    </div>
+                <?php endif; ?>
+                <div class="post-footer">
+                    <span class="post-date"><?= date('d/m/Y H:i', strtotime($post['criado_em'])) ?></span>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

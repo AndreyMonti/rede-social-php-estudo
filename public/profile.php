@@ -1,105 +1,88 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/helpers.php';
+
 // Buscar usuário
 $id = intval($_GET['id'] ?? currentUserId());
 $stmt = $pdo->prepare('SELECT * FROM users WHERE id=?');
 $stmt->execute([$id]);
 $u = $stmt->fetch();
-if(!$u) { echo 'Usuário não encontrado'; exit; }
+if (!$u) { echo 'Usuário não encontrado'; exit; }
+
 $pageTitle = 'Perfil - ' . $u['nome'];
 include __DIR__ . '/../includes/head.php';
 include __DIR__ . '/../includes/header.php';
 
-// Buscar número de posts
+// Número de posts
 $stmtPosts = $pdo->prepare('SELECT COUNT(*) FROM posts WHERE user_id=?');
 $stmtPosts->execute([$id]);
 $numPosts = $stmtPosts->fetchColumn();
 
-// Buscar número de likes recebidos
-$stmtLikes = $pdo->prepare('SELECT COUNT(*) FROM likes l JOIN posts p ON l.post_id = p.id WHERE p.user_id=?');
+// Número de likes
+$stmtLikes = $pdo->prepare('SELECT COUNT(*) 
+                            FROM likes l 
+                            JOIN posts p ON l.post_id = p.id 
+                            WHERE p.user_id=?');
 $stmtLikes->execute([$id]);
 $numLikes = $stmtLikes->fetchColumn();
+
+// Buscar posts do usuário
+$stmtUserPosts = $pdo->prepare('SELECT * FROM posts WHERE user_id=? ORDER BY criado_em DESC');
+$stmtUserPosts->execute([$id]);
+$userPosts = $stmtUserPosts->fetchAll();
 ?>
-<div class="profile-card">
+
+<link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/profile.css">
+<div class="profile-header">
   <div class="profile-avatar">
-    <img src="<?= $u['avatar'] ? '/public/uploads/' . esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" alt="Avatar de <?=esc($u['nome'])?>">
+    <img src="<?= $u['avatar'] ? '/public/uploads/' . esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" 
+         alt="Avatar de <?=esc($u['nome'])?>">
   </div>
   <div class="profile-info">
-    <h1 class="profile-name"><?=esc($u['nome'])?></h1>
-    <p class="profile-bio"><?=nl2br(esc($u['bio']))?></p>
+    <h1><?=esc($u['nome'])?></h1>
+    <?php if($u['bio']): ?>
+      <p class="bio"><?=nl2br(esc($u['bio']))?></p>
+    <?php endif; ?>
     <div class="profile-stats">
-      <div><strong>Posts:</strong> <?= $numPosts ?></div>
-      <div><strong>Likes:</strong> <?= $numLikes ?></div>
-      <div><strong>Desde:</strong> <?=date('M/Y', strtotime($u['created_at'] ?? ''))?></div>
+      <div><strong><?= $numPosts ?></strong><br>Posts</div>
+      <div><strong><?= $numLikes ?></strong><br>Likes</div>
+      <div><strong><?=date('m/Y', strtotime($u['criado_em']))?></strong><br>Desde</div>
     </div>
+
+    <?php if(currentUserId() === $u['id']): ?>
+      <div class="profile-actions">
+        <a href="<?= BASE_URL ?>/public/edit_profile.php" class="btn-edit">✏️ Editar Perfil</a>
+        <a href="<?= BASE_URL ?>/public/delete_account.php" class="btn-delete" 
+           onclick="return confirm('Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.');">
+           🗑️ Excluir Conta
+        </a>
+      </div>
+    <?php endif; ?>
   </div>
 </div>
-<style>
-  .profile-card {
-    max-width: 400px;
-    margin: 32px auto;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(76,110,245,0.08);
-    padding: 32px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-  .profile-avatar img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #6c63ff;
-    background: #f3f3f3;
-  }
-  .profile-name {
-    font-size: 2rem;
-    font-weight: bold;
-    margin: 0;
-    color: #4f8cff;
-    text-align: center;
-  }
-  .profile-bio {
-    font-size: 1.1rem;
-    color: #444;
-    text-align: center;
-    margin: 8px 0 0 0;
-    white-space: pre-line;
-  }
-  .profile-stats {
-    display: flex;
-    gap: 24px;
-    margin-top: 16px;
-    font-size: 1rem;
-    color: #333;
-    justify-content: center;
-  }
-  .profile-stats div {
-    background: #f5f7ff;
-    border-radius: 8px;
-    padding: 8px 12px;
-    min-width: 70px;
-    text-align: center;
-  }
-  @media (max-width: 600px) {
-    .profile-card {
-      padding: 16px 8px;
-    }
-    .profile-avatar img {
-      width: 80px;
-      height: 80px;
-    }
-    .profile-name {
-      font-size: 1.3rem;
-    }
-    .profile-stats {
-      gap: 8px;
-      font-size: 0.95rem;
-    }
-  }
-</style>
+
+<div class="profile-posts">
+  <?php if(count($userPosts) === 0): ?>
+    <p class="no-posts">Nenhuma postagem encontrada.</p>
+  <?php else: ?>
+    <?php foreach($userPosts as $post): ?>
+      <div class="post-card">
+        <div class="post-header">
+          <img src="<?= $u['avatar'] ? '/public/uploads/' . esc($u['avatar']) : '/assets/img/default-avatar.png' ?>" class="post-avatar">
+          <strong><?=esc($u['nome'])?></strong>
+        </div>
+        <div class="post-content"><?= nl2br(esc($post['conteudo'])) ?></div>
+        <?php if($post['imagem']): ?>
+          <div class="post-img-wrap">
+            <img src="<?= '/public/uploads' . esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
+          </div>
+        <?php endif; ?>
+        <div class="post-footer">
+          <span class="post-date"><?=date('d/m/Y H:i', strtotime($post['criado_em']))?></span>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</div>
+
 <?php include __DIR__ . '/../includes/footer.php'; ?>

@@ -21,6 +21,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 header h1 {
@@ -42,7 +43,7 @@ header nav a:hover {
 /* Container central */
 .container {
     width: 90%;
-    max-width: 800px;
+    max-width: 600px;
     margin: 20px auto;
 }
 
@@ -57,9 +58,9 @@ h2 {
 .post-form {
     background-color: #fff;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     margin-bottom: 25px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .post-form textarea {
@@ -82,7 +83,7 @@ h2 {
     background-color: #007bff;
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.3s;
@@ -96,16 +97,30 @@ h2 {
 .post {
     background-color: #fff;
     padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* Nome do usuário */
+/* Header do post com avatar */
+.post .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+}
+
+.post .post-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #007bff;
+}
+
 .post .nome {
     font-weight: bold;
     font-size: 1.1em;
-    margin-bottom: 5px;
 }
 
 /* Conteúdo do post */
@@ -114,16 +129,83 @@ h2 {
 }
 
 /* Imagem do post */
-.post img {
-    max-width: 100%;
-    border-radius: 8px;
+.post img.post-img {
+    width: 100%;
+    border-radius: 10px;
     margin-bottom: 10px;
+}
+
+/* Ações do post */
+.post .post-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.post .post-actions button {
+    background: none;
+    border: none;
+    color: #007bff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.post .post-actions button:hover {
+    color: #0056b3;
+}
+
+.post .like-count {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Seção de comentários */
+.comment-section {
+    margin-top: 8px;
+}
+
+.comment-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.comment-form input {
+    flex: 1;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.comment-form button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.comment-form button:hover {
+    background-color: #0056b3;
+}
+
+.comments-list .comment-item {
+    background: #f0f2f5;
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 0.9em;
 }
 
 /* Data do post */
 .post .data {
-    font-size: 0.8em;
+    font-size: 0.75em;
     color: #777;
+    text-align: right;
 }
 
 /* Responsivo */

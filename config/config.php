@@ -1,12 +1,10 @@
 <?php
-// config/config.php - ajuste as credenciais conforme necessário para seu ambiente local
 $db_host = 'localhost';
 $db_name = 'redesocial_db';
 $db_user = 'root';
 $db_pass = '';
 
-// --- ADICIONE ESTA LINHA: adapte se seu projeto estiver em outra pasta ---
-define('BASE_URL', '/rede-social-php'); // sem barra final
+define('BASE_URL', '/rede-social-php-estudo'); 
 
 $options = [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

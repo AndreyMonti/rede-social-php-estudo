@@ -79,7 +79,14 @@ $posts = $stmt->fetchAll();
                 $comments = $stmtComments->fetchAll();
             ?>
             <div class="post" data-post-id="<?= $post['id'] ?>">
-                <div class="nome"><?= htmlspecialchars($post['nome']) ?></div>
+                <div class="post-header">
+    <img 
+        src="<?= $post['usuario_avatar'] ? '/public/uploads/avatar/' . htmlspecialchars($post['usuario_avatar']) : '/public/assets/img/default-avatar.png' ?>" 
+        alt="Avatar de <?= htmlspecialchars($post['nome']) ?>" 
+        class="post-avatar"
+    >
+    <span class="nome"><?= htmlspecialchars($post['nome']) ?></span>
+</div>
                 <div class="conteudo"><?= nl2br(htmlspecialchars($post['conteudo'])) ?></div>
                 <?php if($post['imagem']): ?>
                     <img src="<?= htmlspecialchars($post['imagem']) ?>" alt="Imagem do post">

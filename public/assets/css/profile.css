@@ -106,7 +106,6 @@
   text-align: right; 
 }
 
-/* RESPONSIVO */
 @media (max-width: 600px) {
   .profile-header { 
     flex-direction: column; 
@@ -119,4 +118,36 @@
   }
   .profile-info h1 { font-size: 1.4rem; }
   .profile-stats { gap: 12px; font-size: 0.9rem; }
+}
+.profile-avatar img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #007bff;
+}
+
+/* Avatar dos posts no feed e no profile */
+.post-avatar,
+.post-header img {
+  width: 48px;          /* tamanho fixo padronizado */
+  height: 48px;
+  border-radius: 50%; 
+  object-fit: cover;
+  flex-shrink: 0;      
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;  
+  gap: 12px;
+  padding: 12px;
 }

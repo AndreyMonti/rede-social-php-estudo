@@ -83,7 +83,7 @@ $userPosts = $stmtUserPosts->fetchAll(PDO::FETCH_ASSOC);
                 <div class="post-content"><?= nl2br(esc($post['conteudo'])) ?></div>
                 <?php if($post['imagem']): ?>
                     <div class="post-img-wrap">
-                        <img src="<?= BASE_URL . '/public/uploads/posts' . esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
+                        <img src="<?= BASE_URL . '/public/' . esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
                     </div>
                 <?php endif; ?>
                 <div class="post-footer">

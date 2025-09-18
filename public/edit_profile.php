@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../includes/helpers.php';
 
-// Inicializa variáveis para evitar warnings
+// Inicializa variáveis
 $u = null;
 $mensagem = '';
 
@@ -33,15 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (in_array($ext, $permitidos)) {
                 $novoNome = 'user_' . $id . '.' . $ext;
-                $uploadDir = __DIR__ . '/../uploads/';
-                $destino  = $uploadDir . $novoNome;
-
+                $uploadDir = __DIR__ . '/../public/uploads/avatars/';
                 if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+                $destino  = $uploadDir . $novoNome;
 
                 if (move_uploaded_file($_FILES['foto']['tmp_name'], $destino)) {
                     $stmt = $pdo->prepare('UPDATE users SET avatar=? WHERE id=?');
                     $stmt->execute([$novoNome, $id]);
-                    $u['avatar'] = $novoNome; // Atualiza avatar na tela
+                    $u['avatar'] = $novoNome;
                 } else {
                     $mensagem = "Erro ao enviar a foto.";
                 }
@@ -63,11 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Foto do usuário ou default
-$foto = $u['avatar'] ?? 'default.jpg';
-$imagemCaminho = file_exists(__DIR__ . '/../uploads/' . $foto) 
-    ? BASE_URL . '/uploads/' . $foto 
-    : BASE_URL . '/uploads/default.jpg';
+// Caminho para exibir foto
+$foto = $u['avatar'] ?? '';
+$imagemCaminho = $foto 
+    ? BASE_URL . '/public/uploads/avatars/' . $foto 
+    : BASE_URL . '/public/assets/img/default-avatar.png';
 ?>
 
 <!DOCTYPE html>

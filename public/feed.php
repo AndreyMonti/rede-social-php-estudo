@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['conteudo']) && !isse
     if (isset($_FILES['imagem']) && $_FILES['imagem']['size'] > 0) {
         $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
         if (in_array($_FILES['imagem']['type'], $allowedTypes)) {
-            $uploadDir = __DIR__ . '/../public/uploads/';
+            $uploadDir = __DIR__ . '/../public/uploads/posts/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
             $ext = pathinfo($_FILES['imagem']['name'], PATHINFO_EXTENSION);
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['conteudo']) && !isse
             $imagemPath = $uploadDir . $imagemNome;
 
             if (move_uploaded_file($_FILES['imagem']['tmp_name'], $imagemPath)) {
-                $imagem = 'uploads/' . $imagemNome;
+                $imagem = 'uploads/posts/' . $imagemNome;
             }
         }
     }
@@ -77,7 +77,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'comment') {
 
         echo json_encode([
             'nome' => htmlspecialchars($newComment['nome']),
-            'avatar' => $newComment['avatar'] ? 'uploads/' . $newComment['avatar'] : 'assets/img/default-avatar.png',
+            'avatar' => $newComment['avatar'] 
+                ? 'uploads/avatars/' . $newComment['avatar'] 
+                : 'assets/img/default-avatar.png',
             'conteudo' => htmlspecialchars($newComment['conteudo'])
         ]);
     }
@@ -102,9 +104,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <title>Feed - ConectaTech</title>
 <link rel="stylesheet" href="../public/assets/css/feed.css">
 <style>
-/* ... mesmo CSS que você já tem ... */
 .comment-item { display:flex; align-items:center; gap:8px; }
 .comment-avatar { width:30px; height:30px; border-radius:50%; object-fit:cover; }
+.post-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:8px; }
 </style>
 </head>
 <body>
@@ -146,7 +148,10 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     ?>
     <div class="post" data-post-id="<?= $post['id'] ?>">
         <div class="post-header">
-            <img src="<?= $post['usuario_avatar'] ? '../public/uploads/' . htmlspecialchars($post['usuario_avatar']) : '../public/assets/img/default-avatar.png' ?>" class="post-avatar" alt="Avatar de <?= htmlspecialchars($post['nome']) ?>">
+            <img src="<?= $post['usuario_avatar'] 
+                ? '../public/uploads/avatars/' . htmlspecialchars($post['usuario_avatar']) 
+                : '../public/assets/img/default-avatar.png' ?>" 
+                class="post-avatar" alt="Avatar de <?= htmlspecialchars($post['nome']) ?>">
             <div class="nome"><?= htmlspecialchars($post['nome']) ?></div>
             <?php if ($post['user_id'] == $user_id): ?>
                 <a href="feed.php?delete_post=<?= $post['id'] ?>" class="delete-post" onclick="return confirm('Tem certeza que deseja excluir este post?')">Excluir</a>
@@ -170,7 +175,10 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="comments-list" id="comments-list-<?= $post['id'] ?>">
                 <?php foreach($comments as $c): ?>
                     <div class="comment-item">
-                        <img src="<?= $c['avatar'] ? '../public/uploads/' . htmlspecialchars($c['avatar']) : '../public/assets/img/default-avatar.png' ?>" class="comment-avatar">
+                        <img src="<?= $c['avatar'] 
+                            ? '../public/uploads/avatars/' . htmlspecialchars($c['avatar']) 
+                            : '../public/assets/img/default-avatar.png' ?>" 
+                            class="comment-avatar">
                         <div><strong><?= htmlspecialchars($c['nome']) ?></strong>: <?= htmlspecialchars($c['conteudo']) ?></div>
                     </div>
                 <?php endforeach; ?>

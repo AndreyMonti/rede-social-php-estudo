@@ -39,7 +39,9 @@ $userPosts = $stmtUserPosts->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="profile-header">
     <div class="profile-avatar">
-        <img src="<?= $u['avatar'] ? BASE_URL . '/uploads/' . esc($u['avatar']) : BASE_URL . '/public/assets/img/default-avatar.png' ?>" 
+        <img src="<?= $u['avatar'] 
+                      ? BASE_URL . '/public/uploads/avatars/' . esc($u['avatar']) 
+                      : BASE_URL . '/public/assets/img/default-avatar.png' ?>" 
              alt="Avatar de <?= esc($u['nome']) ?>">
     </div>
     <div class="profile-info">
@@ -55,10 +57,10 @@ $userPosts = $stmtUserPosts->fetchAll(PDO::FETCH_ASSOC);
 
         <?php if(currentUserId() === $u['id']): ?>
             <div class="profile-actions">
-                <a href="<?= BASE_URL ?>/public/edit_profile.php" class="btn-edit">✏️ Editar Perfil</a>
+                <a href="<?= BASE_URL ?>/public/edit_profile.php" class="btn-edit">Editar Perfil</a>
                 <a href="<?= BASE_URL ?>/public/delete_account.php" class="btn-delete" 
                    onclick="return confirm('Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita.');">
-                   🗑️ Excluir Conta
+                   Excluir Conta
                 </a>
             </div>
         <?php endif; ?>
@@ -72,14 +74,16 @@ $userPosts = $stmtUserPosts->fetchAll(PDO::FETCH_ASSOC);
         <?php foreach($userPosts as $post): ?>
             <div class="post-card">
                 <div class="post-header">
-                    <img src="<?= $u['avatar'] ? BASE_URL . '/uploads/' . esc($u['avatar']) : BASE_URL . '/public/assets/img/default-avatar.png' ?>" 
+                    <img src="<?= $u['avatar'] 
+                                  ? BASE_URL . '/public/uploads/avatars/' . esc($u['avatar']) 
+                                  : BASE_URL . '/public/assets/img/default-avatar.png' ?>" 
                          alt="Avatar de <?= esc($u['nome']) ?>">
                     <strong><?= esc($u['nome']) ?></strong>
                 </div>
                 <div class="post-content"><?= nl2br(esc($post['conteudo'])) ?></div>
                 <?php if($post['imagem']): ?>
                     <div class="post-img-wrap">
-                        <img src="<?= BASE_URL . '/public/uploads/' . esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
+                        <img src="<?= BASE_URL . '/public/uploads/posts' . esc($post['imagem']) ?>" class="post-img" alt="Imagem do post">
                     </div>
                 <?php endif; ?>
                 <div class="post-footer">

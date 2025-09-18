@@ -8,7 +8,7 @@ if (!$user_id) {
 }
 
 // Criar post
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['conteudo'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['conteudo']) && !isset($_POST['comentario'])) {
     $conteudo = $_POST['conteudo'];
     $imagem = '';
 
@@ -25,8 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['conteudo'])) {
             if (move_uploaded_file($_FILES['imagem']['tmp_name'], $imagemPath)) {
                 $imagem = 'uploads/' . $imagemNome;
             }
-        } else {
-            echo "<p style='color:red'>Formato de imagem não permitido. Apenas JPG e PNG.</p>";
         }
     }
 
@@ -40,6 +38,49 @@ if (isset($_GET['delete_post'])) {
     $stmt = $pdo->prepare("DELETE FROM posts WHERE id=? AND user_id=?");
     $stmt->execute([$delete_post_id, $user_id]);
     header('Location: feed.php');
+    exit;
+}
+
+// Função AJAX: Curtir
+if (isset($_POST['action']) && $_POST['action'] === 'like') {
+    $postId = intval($_POST['post_id']);
+    $stmt = $pdo->prepare("SELECT id FROM likes WHERE post_id=? AND user_id=?");
+    $stmt->execute([$postId, $user_id]);
+
+    if ($stmt->fetch()) {
+        $pdo->prepare("DELETE FROM likes WHERE post_id=? AND user_id=?")->execute([$postId, $user_id]);
+    } else {
+        $pdo->prepare("INSERT INTO likes (post_id, user_id) VALUES (?, ?)")->execute([$postId, $user_id]);
+    }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM likes WHERE post_id=?");
+    $stmt->execute([$postId]);
+    echo $stmt->fetchColumn();
+    exit;
+}
+
+// Função AJAX: Comentar
+if (isset($_POST['action']) && $_POST['action'] === 'comment') {
+    $postId = intval($_POST['post_id']);
+    $comentario = trim($_POST['comentario']);
+    if ($comentario !== '') {
+        $pdo->prepare("INSERT INTO comments (post_id, user_id, conteudo) VALUES (?, ?, ?)")
+            ->execute([$postId, $user_id, $comentario]);
+
+        $stmt = $pdo->prepare("SELECT u.nome, u.avatar, c.conteudo 
+                               FROM comments c 
+                               JOIN users u ON c.user_id=u.id 
+                               WHERE c.post_id=? 
+                               ORDER BY c.id DESC LIMIT 1");
+        $stmt->execute([$postId]);
+        $newComment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'nome' => htmlspecialchars($newComment['nome']),
+            'avatar' => $newComment['avatar'] ? 'uploads/' . $newComment['avatar'] : 'assets/img/default-avatar.png',
+            'conteudo' => htmlspecialchars($newComment['conteudo'])
+        ]);
+    }
     exit;
 }
 
@@ -61,28 +102,9 @@ $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <title>Feed - ConectaTech</title>
 <link rel="stylesheet" href="../public/assets/css/feed.css">
 <style>
-/* Reset e estilos básicos */
-* { box-sizing: border-box; margin:0; padding:0; }
-body { font-family: Arial,sans-serif; background:#f2f2f2; color:#333; line-height:1.6; }
-header { background:#007bff; color:#fff; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; }
-header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:bold; }
-.container { width:90%; max-width:600px; margin:20px auto; }
-.post-form { background:#fff; padding:16px; border-radius:12px; margin-bottom:24px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-.post-form textarea { width:100%; height:80px; padding:10px; border-radius:5px; border:1px solid #ccc; }
-.post-form button { margin-top:10px; padding:10px 20px; border:none; border-radius:6px; background:#007bff; color:#fff; cursor:pointer; }
-.post { background:#fff; padding:15px; border-radius:12px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-.post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.post-avatar { width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #007bff; }
-.post .nome { font-weight:bold; font-size:1.1em; }
-.post img.post-img { width:100%; max-height:400px; object-fit:cover; border-radius:10px; margin-bottom:10px; }
-.post-actions { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.comment-section { margin-top:8px; display:none; }
-.comment-form { display:flex; gap:8px; margin-bottom:8px; }
-.comment-form input { flex:1; padding:6px 10px; border-radius:6px; border:1px solid #ccc; }
-.comment-form button { padding:6px 12px; border-radius:6px; border:none; background:#007bff; color:#fff; cursor:pointer; }
-.comments-list .comment-item { background:#f0f2f5; padding:6px 10px; border-radius:8px; margin-bottom:4px; font-size:0.9em; }
-.post .data { font-size:0.75em; color:#777; text-align:right; }
-.delete-post { margin-left:auto; background:red; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-size:0.8em; }
+/* ... mesmo CSS que você já tem ... */
+.comment-item { display:flex; align-items:center; gap:8px; }
+.comment-avatar { width:30px; height:30px; border-radius:50%; object-fit:cover; }
 </style>
 </head>
 <body>
@@ -111,7 +133,14 @@ header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:b
         $stmtLikes->execute([$post['id']]);
         $likes = $stmtLikes->fetchColumn();
 
-        $stmtComments = $pdo->prepare('SELECT c.*, u.nome FROM comments c JOIN users u ON u.id=c.user_id WHERE c.post_id=? ORDER BY c.criado_em ASC');
+        $stmtUserLiked = $pdo->prepare('SELECT 1 FROM likes WHERE post_id=? AND user_id=?');
+        $stmtUserLiked->execute([$post['id'], $user_id]);
+        $userLiked = $stmtUserLiked->fetch();
+
+        $stmtComments = $pdo->prepare('SELECT c.*, u.nome, u.avatar 
+                                       FROM comments c 
+                                       JOIN users u ON u.id=c.user_id 
+                                       WHERE c.post_id=? ORDER BY c.criado_em ASC');
         $stmtComments->execute([$post['id']]);
         $comments = $stmtComments->fetchAll(PDO::FETCH_ASSOC);
     ?>
@@ -129,18 +158,21 @@ header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:b
         <?php endif; ?>
         <div class="data"><?= date('d/m/Y H:i', strtotime($post['criado_em'])) ?></div>
         <div class="post-actions">
-            <button class="like-btn" data-post-id="<?= $post['id'] ?>">Curtir</button>
+            <button class="like-btn" data-post-id="<?= $post['id'] ?>"><?= $userLiked ? 'Descurtir' : 'Curtir' ?></button>
             <span class="like-count" id="like-count-<?= $post['id'] ?>"><?= $likes ?></span>
             <button class="comment-toggle-btn" data-post-id="<?= $post['id'] ?>">Comentar</button>
         </div>
-        <div class="comment-section" id="comment-section-<?= $post['id'] ?>">
+        <div class="comment-section" id="comment-section-<?= $post['id'] ?>" style="display:none">
             <form class="comment-form" data-post-id="<?= $post['id'] ?>">
                 <input type="text" name="comentario" placeholder="Digite seu comentário..." required>
                 <button type="submit">Enviar</button>
             </form>
             <div class="comments-list" id="comments-list-<?= $post['id'] ?>">
                 <?php foreach($comments as $c): ?>
-                    <div class="comment-item"><strong><?= htmlspecialchars($c['nome']) ?></strong>: <?= htmlspecialchars($c['conteudo']) ?></div>
+                    <div class="comment-item">
+                        <img src="<?= $c['avatar'] ? '../public/uploads/' . htmlspecialchars($c['avatar']) : '../public/assets/img/default-avatar.png' ?>" class="comment-avatar">
+                        <div><strong><?= htmlspecialchars($c['nome']) ?></strong>: <?= htmlspecialchars($c['conteudo']) ?></div>
+                    </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -149,14 +181,54 @@ header nav a { color:#fff; text-decoration:none; margin-left:20px; font-weight:b
 
 </div>
 
-<script src="../public/assets/js/app.js"></script>
 <script>
-// Toggle comentários
+// Curtir
+document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const postId = this.dataset.postId;
+        fetch('feed.php', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+            body: 'action=like&post_id=' + postId
+        })
+        .then(res => res.text())
+        .then(count => {
+            document.getElementById('like-count-' + postId).textContent = count;
+            this.textContent = this.textContent === 'Curtir' ? 'Descurtir' : 'Curtir';
+        });
+    });
+});
+
+// Mostrar/ocultar comentários
 document.querySelectorAll('.comment-toggle-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const postId = this.dataset.postId;
         const section = document.getElementById('comment-section-' + postId);
         section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    });
+});
+
+// Enviar comentário
+document.querySelectorAll('.comment-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const postId = this.dataset.postId;
+        const input = this.querySelector('input[name="comentario"]');
+        fetch('feed.php', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+            body: 'action=comment&post_id=' + postId + '&comentario=' + encodeURIComponent(input.value)
+        })
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('comments-list-' + postId);
+            const div = document.createElement('div');
+            div.classList.add('comment-item');
+            div.innerHTML = `<img src="../public/${data.avatar}" class="comment-avatar"> <div><strong>${data.nome}</strong>: ${data.conteudo}</div>`;
+            list.appendChild(div);
+            input.value = '';
+        });
     });
 });
 </script>
